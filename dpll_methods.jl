@@ -23,14 +23,15 @@ end
 # Returns all pure literals present in the CNF
 function find_pure_symbols(cnf::CNF)
     variables = Dict() # variable => "sign" in bools
-    pures = Set()
+    pures = Set(cnf.symbols)
     for clause in cnf.clauses
         for literal in clause
+            symbol = abs(literal)
             curr_sign = get_sign(literal)
-            dict_sign = get!(variables, abs(literal), curr_sign)
+            dict_sign = get!(variables, symbol, curr_sign)
 
-            if dict_sign == curr_sign
-                push!(pures, literal)
+            if dict_sign != curr_sign
+                delete!(pures, symbol)
             end
         end
     end
@@ -53,10 +54,11 @@ function all_true(cnf::CNF)
     for clause in cnf.clauses
         one_true = false
         for literal in clause
-            if literal ∉ keys(cnf.values)
+            symbol = abs(literal)
+            if symbol ∉ keys(cnf.values)
                 continue
             end
-            lit_value = cnf.values[literal]
+            lit_value = cnf.values[symbol]
 
             if get_lit_bool(literal, lit_value)
                 one_true = true
